@@ -32,6 +32,7 @@ use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\RequestNetworkSettingsPacket;
 use pocketmine\plugin\PluginBase;
 use function in_array;
+use function spl_object_id;
 
 final class SoftProtocols extends PluginBase implements Listener{
 
@@ -56,14 +57,15 @@ final class SoftProtocols extends PluginBase implements Listener{
 	 * @priority HIGHEST
 	 * @handleCancelled true
 	 */
-	public function onPacketReceive(DataPacketReceiveEvent $event) : void{
+	public function onDataPacketReceive(DataPacketReceiveEvent $event) : void{
 		$packet = $event->getPacket();
 		if($packet instanceof RequestNetworkSettingsPacket){
 			$protocolVersion = $packet->getProtocolVersion();
 			if($protocolVersion !== ProtocolInfo::CURRENT_PROTOCOL && ($protocolVersion < ProtocolInfo::CURRENT_PROTOCOL || $protocolVersion > ProtocolInfo::CURRENT_PROTOCOL) && in_array($protocolVersion, self::SUPPORTED_PROTOCOLS, true)){
 				$session = $event->getOrigin();
 				$session->setHandler(null);
-				if(isset($this->pendingSessions[$session->getIp()]["session"])){
+				$id = spl_object_id($session);
+				if(isset($this->pendingSessions[$id]["session"])){
 					$session->setHandler(new SessionStartPacketHandlerProtocols(
 						$session,
 						function() use($session) : void{
@@ -73,11 +75,11 @@ final class SoftProtocols extends PluginBase implements Listener{
 							$reflectionMethod->invoke($session);
 						}
 					));
-					unset($this->pendingSessions[$session->getIp()]);
+					unset($this->pendingSessions[$id]);
 					return;
 				}
-				$this->pendingSessions[$session->getIp()]["session"] = true;
-				$session->handleDataPacket(RequestNetworkSettingsPacket::create(ProtocolInfo::CURRENT_PROTOCOL), $this->pendingSessions[$session->getIp()]["buffer"]);
+				$this->pendingSessions[$id]["session"] = true;
+				$session->handleDataPacket(RequestNetworkSettingsPacket::create(ProtocolInfo::CURRENT_PROTOCOL), $this->pendingSessions[$id]["buffer"]);
 				$event->cancel();
 			}
 		}
@@ -85,7 +87,8 @@ final class SoftProtocols extends PluginBase implements Listener{
 
 	public function onDataPacketDecode(DataPacketDecodeEvent $event) : void{
 		if($event->getPacketId() === ProtocolInfo::REQUEST_NETWORK_SETTINGS_PACKET){
-			$this->pendingSessions[$event->getOrigin()->getIp()]["buffer"] = $event->getPacketBuffer();
+			$session = $event->getOrigin();
+			$this->pendingSessions[spl_object_id($session)]["buffer"] = $event->getPacketBuffer();
 		}
 	}
 }
