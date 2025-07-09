@@ -79,6 +79,12 @@ final class SoftProtocols extends PluginBase implements Listener{
 					return;
 				}
 				$this->pendingSessions[$id]["session"] = true;
+
+				if(!isset($this->pendingSessions[$id]["buffer"])){
+					//This should never have happened.
+					return;
+				}
+
 				$session->handleDataPacket(RequestNetworkSettingsPacket::create(ProtocolInfo::CURRENT_PROTOCOL), $this->pendingSessions[$id]["buffer"]);
 				$event->cancel();
 			}
