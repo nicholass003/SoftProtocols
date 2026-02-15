@@ -34,11 +34,13 @@ use function in_array;
 final class SoftProtocols extends PluginBase implements Listener{
 
 	public const SUPPORTED_PROTOCOLS = [
-		819, // v1.21.93
-		818, // v1.21.90 - v1.21.92
+		860, // v1.21.124
+		859, // v1.21.120 - v1.21.123
 	];
 
 	public const MINECRAFT_VERSIONS = [
+		860 => "v1.21.124",
+		859 => "v1.21.120 - v1.21.123",
 		819 => "v1.21.93",
 		818 => "v1.21.90 - v1.20.92",
 	];
