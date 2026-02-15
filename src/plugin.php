@@ -24,30 +24,28 @@ declare(strict_types=1);
 
 namespace Nicholass003\SoftProtocols;
 
-use Nicholass003\SoftProtocols\Network\Handler\SessionStartPacketHandlerProtocols;
 use pocketmine\event\Listener;
-use pocketmine\event\server\DataPacketDecodeEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\RequestNetworkSettingsPacket;
 use pocketmine\plugin\PluginBase;
 use function in_array;
-use function spl_object_id;
 
 final class SoftProtocols extends PluginBase implements Listener{
 
-	/** @var array<string, array{session: bool, buffer: string}> */
-	private array $pendingSessions = [];
-
 	public const SUPPORTED_PROTOCOLS = [
-		818, // v1.21.90 - v1.21.92
 		819, // v1.21.93
+		818, // v1.21.90 - v1.21.92
 	];
 
 	public const MINECRAFT_VERSIONS = [
-		818 => "v1.21.90 - v1.20.92",
 		819 => "v1.21.93",
+		818 => "v1.21.90 - v1.20.92",
 	];
+
+	protected function onLoad() : void{
+		$this->saveDefaultConfig();
+	}
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -62,39 +60,11 @@ final class SoftProtocols extends PluginBase implements Listener{
 		if($packet instanceof RequestNetworkSettingsPacket){
 			$protocolVersion = $packet->getProtocolVersion();
 			if($protocolVersion !== ProtocolInfo::CURRENT_PROTOCOL && ($protocolVersion < ProtocolInfo::CURRENT_PROTOCOL || $protocolVersion > ProtocolInfo::CURRENT_PROTOCOL) && in_array($protocolVersion, self::SUPPORTED_PROTOCOLS, true)){
-				$session = $event->getOrigin();
-				$session->setHandler(null);
-				$id = spl_object_id($session);
-				if(isset($this->pendingSessions[$id]["session"])){
-					$session->setHandler(new SessionStartPacketHandlerProtocols(
-						$session,
-						function() use($session) : void{
-							$reflectionClass = new \ReflectionClass($session);
-							$reflectionMethod = $reflectionClass->getMethod("onSessionStartSuccess");
-							$reflectionMethod->setAccessible(true);
-							$reflectionMethod->invoke($session);
-						}
-					));
-					unset($this->pendingSessions[$id]);
-					return;
-				}
-				$this->pendingSessions[$id]["session"] = true;
-
-				if(!isset($this->pendingSessions[$id]["buffer"])){
-					//This should never have happened.
-					return;
-				}
-
-				$session->handleDataPacket(RequestNetworkSettingsPacket::create(ProtocolInfo::CURRENT_PROTOCOL), $this->pendingSessions[$id]["buffer"]);
-				$event->cancel();
+				$reflectionClass = new \ReflectionClass($packet);
+				$protocolVersionProperty = $reflectionClass->getProperty("protocolVersion");
+				$protocolVersionProperty->setAccessible(true);
+				$protocolVersionProperty->setValue($packet, ProtocolInfo::CURRENT_PROTOCOL);
 			}
-		}
-	}
-
-	public function onDataPacketDecode(DataPacketDecodeEvent $event) : void{
-		if($event->getPacketId() === ProtocolInfo::REQUEST_NETWORK_SETTINGS_PACKET){
-			$session = $event->getOrigin();
-			$this->pendingSessions[spl_object_id($session)]["buffer"] = $event->getPacketBuffer();
 		}
 	}
 }
