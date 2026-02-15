@@ -61,7 +61,7 @@ final class SoftProtocols extends PluginBase implements Listener{
 		$packet = $event->getPacket();
 		if($packet instanceof RequestNetworkSettingsPacket){
 			$protocolVersion = $packet->getProtocolVersion();
-			if($protocolVersion !== ProtocolInfo::CURRENT_PROTOCOL && ($protocolVersion < ProtocolInfo::CURRENT_PROTOCOL || $protocolVersion > ProtocolInfo::CURRENT_PROTOCOL) && in_array($protocolVersion, self::SUPPORTED_PROTOCOLS, true)){
+			if($protocolVersion !== ProtocolInfo::CURRENT_PROTOCOL && ($protocolVersion < ProtocolInfo::CURRENT_PROTOCOL || $protocolVersion > ProtocolInfo::CURRENT_PROTOCOL) && in_array($protocolVersion, $this->getConfig()->get("supported-protocols", self::SUPPORTED_PROTOCOLS), true)){
 				$reflectionClass = new \ReflectionClass($packet);
 				$protocolVersionProperty = $reflectionClass->getProperty("protocolVersion");
 				$protocolVersionProperty->setAccessible(true);
