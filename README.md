@@ -82,15 +82,13 @@ sequenceDiagram
 
 ## 🛠 Configuration
 
-No config file needed.
-Edit the supported protocols directly in `SoftProtocols.php`:
+Edit the supported protocols in `config.yml`:
 
-```php
-public const SUPPORTED_PROTOCOLS = [
-    818,  // Original version
-    819   // Newer compatible version
-    // Add ONLY minor version differences
-];
+```yaml
+## SoftProtocols Configuration ##
+supported-protocols:
+- 860 # v1.21.124
+- 859 # v1.21.120 - v1.21.123
 ```
 
 ---
