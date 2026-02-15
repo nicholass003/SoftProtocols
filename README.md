@@ -25,8 +25,8 @@ A lightweight PocketMine-MP plugin that <strong>exclusively handles protocol ver
 
 | Protocol | Minecraft Version     | Notes             |
 |----------|------------------------|-------------------|
-| 819      | 1.21.93                | Primary Supported |
-| 818      | 1.21.90 – 1.21.92      | Minor Extension   |
+| 860      | 1.21.124                | Primary Supported |
+| 859      | 1.21.120 – 1.21.123      | Minor Extension   |
 
 ---
 
