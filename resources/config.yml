@@ -1,4 +1,4 @@
 ## SoftProtocols Configuration ##
 supported-protocols:
-- 860 # v1.21.124
-- 859 # v1.21.120 - v1.21.123
+  - 860 # v1.21.124
+  - 859 # v1.21.120 - v1.21.123
